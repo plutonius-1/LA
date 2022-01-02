@@ -1,0 +1,7 @@
+*ipynb*/
+*.csv
+__init__.py
+__pycache__/
+data/
+ibapi1/
+*.ipynb
