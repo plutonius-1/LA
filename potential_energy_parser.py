@@ -45,7 +45,6 @@ class Potential_energy_parser(Base_c):
     ## Calculations
     ##==============================
     def calc_regression_to_mean(self, price_vector : pd.Series, price_in_question : float):
-        # assert type(price_vector) is np.ndarray, f"price vector type is {type(price_vector)} - should be np.ndarray"
         xs = np.array([i for i in reversed(range(len(price_vector)))])
         ys = self.clean_prices(price_vector).to_numpy()
         R2, func, med = self._find_best_fitting_mean(xs, ys)
@@ -86,7 +85,6 @@ class Potential_energy_parser(Base_c):
 
             # then find the actual median of the function above
             theta0 = least_median_abs_1d(rs)
-
             return np.median(np.abs(rs - theta0))
 
         # find the minimum of a function with an initial guess
@@ -145,15 +143,11 @@ class Potential_energy_parser(Base_c):
             assert type(v) is pd.Series
             res_vec   = price_vector/v
             ratios_df = pd.concat([ratios_df, res_vec])
-
-
-
-
-
         return ratios_vector
     ##==============================
     ## Utilities
     ##==============================
+
 
     ##==============================
     ## Gets
@@ -165,7 +159,13 @@ class Potential_energy_parser(Base_c):
         else:
             self.call_ibapi_function(cfg.GET_FUNDUMENTALS,
                                      ticker = ticker)
-
+            self.finStatementXmlReader.set_ticker(ticker)
+            fund_data_obj = self.finStatementXmlReader.get_fundamentals_obj()
+            ticker_obj    = Ticker_data_c()
+            ticker_obj.set_ticker(ticker)
+            ticker_obj.set_raw_data(fund_data_obj, "IB")
+            ticker_obj.set_raw_statements()
+            return ticker_obj.get_raw_statements()
 
     def get_news_vector(self):
         return self._news_vector

@@ -1,5 +1,5 @@
 import pandas as pd
-from pandas import np as np
+import numpy as np
 import datetime
 from dateutil import parser
 import sys
@@ -14,6 +14,7 @@ import proj_sec_scraping_utils
 import proj_snapshotXmlReader
 import proj_finStatementsXmlReader
 import proj_sics_handler_c
+from proj_ticker_data_c_v2 import Ticker_data_c
 from cfg import logging
 
 class Base_c:
@@ -31,9 +32,14 @@ class Base_c:
         self.ibapi_run_thread = None
 
         #==================
-        # Field:
-        # Description
+        # Field: host_addr
+        # Description: local computer ip addr
         self.host_addr = "192.168.0.152"
+
+        #==================
+        # Field: finStatementXmlReader
+        # handle to XML reader to decode IB fund data
+        self.finStatementXmlReader = proj_finStatementsXmlReader.finStatementsXmlReader_c()
 
     ##==============================
     ## Calculations
