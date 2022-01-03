@@ -153,22 +153,31 @@ class Potential_energy_parser(Base_c):
     ## Gets
     ##==============================
     def get_fund_data(self, ticker : str):
+        """
+        returns a data object from ticker object
+        """
         ticker = ticker.upper()
+
+        # first look localy for raw xml data
         data = self.finStatementXmlReader.try_get_processed_fund_data(ticker)
+
+        # if data does not exists localy - get from IB
         if data is None:
             print(f"{__name__} : did not find fundumental local copy for {ticker} - getting from IB")
             self.call_ibapi_function(cfg.GET_FUNDUMENTALS,
                                      ticker = ticker)
             self.finStatementXmlReader.set_ticker(ticker)
-            fund_data_obj = self.finStatementXmlReader.get_fundamentals_obj()
-            ticker_obj    = Ticker_data_c()
-            ticker_obj.set_ticker(ticker)
-            ticker_obj.set_raw_data(fund_data_obj, "IB")
-            ticker_obj.set_raw_statements()
-            return ticker_obj.get_raw_statements()
-        else:
-            print(f'{__name__} : found local copy of fundumentals for {ticker}')
-            return data
+            data = self.finStatementXmlReader.get_fundamentals_obj()
+
+        # otherwise if data exists check for date validity
+        #else
+        CONT HERE
+
+        ticker_obj    = Ticker_data_c()
+        ticker_obj.set_ticker(ticker)
+        ticker_obj.set_raw_data(data, "IB")
+        ticker_obj.set_raw_statements()
+        return ticker_obj.get_raw_statements()
 
 
 
