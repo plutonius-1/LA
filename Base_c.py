@@ -55,56 +55,35 @@ class Base_c:
     ##==============================
     ## Utilities
     ##==============================
-    def match_2_ser_objects(self,
-                            s1 : pd.Series,
-                            s2 : pd.Series):
-        """
-        Extending s1 or s2 to be the same length as the longest one -
-        the extenstion is based on dates.
-        """
-        # if (len(s1) > len(s2)):
-            # s_extend = s2
-            # s_template = s1
-        # else:
-            # s_extend = s1
-            # s_template = s2
 
-        # # first assert that all dates in s_extend are in s_template
-        # date_template = s_template['date'].values
-        # for temp_date in s_extend['date']:
-            # if (temp_date not in date_template):
-                # print(f'{__name__}: {temp_date} not in {s_template.name}')
-                # return
-
-        return
-    def extend_series_to_match_series(self,
-                                      s_to_extend : pd.DataFrame,
-                                      s_to_match  : pd.DataFrame):
-        extended_ser = pd.Series()
-        vals = []
+    def extend_to_match(to_match, to_extend, name):
+        to_match.index = [i for i in range(len(to_match))]
+        to_extend.index = [i for i in range(len(to_extend))]
+        # copy the wanted df
         res = {}
-        # assert size differnce
-        assert len(s_to_extend) < len(s_to_match)
 
-        # assert order of vectors dates
-        to_extend_dates = s_to_extend['date']
-        to_match_dates  = s_to_match['date']
-        assert to_extend_dates[-1] > to_extend_dates[0]
-        assert to_match_dates[-1]  > to_match_dates[0]
+        c = 0
+        c1 = 0
+        for idx in range(len(to_extend) - 1):
+            low_date  = to_extend.iloc[c1]['date'] # 1
+            high_date = to_extend.iloc[c1+1]['date'] # 4
 
-        # first make sure that the fundumental data "to_match_date" has the furthest data point
-        new_dates = to_match_dates
-        for date in new_dates:
-            for i in range(len(to_extend_dates)-1):
-                val      =
-                low_date = to_extend_dates[i]
-                high_date = to_extend_dates[i+1]
+            tmp_date = to_match.iloc[c]['date'] # 0
+            tmp_val  = to_extend.iloc[c1]['val'] # 10
 
-                if date > low_date and date < high_date:
-                    res.update({date : s_to_extend.loc[]})
+            while tmp_date < high_date:
+                if (tmp_date >= low_date):
+                    res.update({tmp_date : tmp_val})
+                c += 1
+                tmp_date = to_match.iloc[c]['date']
 
-
-        return
+            c1 += 1
+        tmp_val = to_extend.iloc[c1]['val']
+        for i in to_match[c:]['date']:
+            res.update({i : tmp_val})
+        res = {name : res}
+        res = pd.DataFrame.from_dict(res)
+        return res
 
     def norm_ser(self,
                  s : pd.DataFrame):
