@@ -1,4 +1,3 @@
-
 from Base_c import *
 import numpy as np
 from scipy.optimize import basinhopping
@@ -126,7 +125,7 @@ class Potential_energy_parser(Base_c):
         return (R2, best_func, best_med)
 
 
-    def calc_ratios_vector(self,
+    def calc_ratios_vectors(self,
                            list_of_vectors : list,
                            price_vector    : pd.Series
                            ):
@@ -142,11 +141,14 @@ class Potential_energy_parser(Base_c):
         for v in list_of_vectors:
             assert type(v) is pd.Series
             res_vec   = price_vector/v
+            res_vec.name = f'{v.name}/price'
             ratios_df = pd.concat([ratios_df, res_vec])
-        return ratios_vector
+        return ratios_df
+
     ##==============================
     ## Utilities
     ##==============================
+
 
 
     ##==============================
@@ -170,16 +172,32 @@ class Potential_energy_parser(Base_c):
             data = self.finStatementXmlReader.get_fundamentals_obj()
 
         # otherwise if data exists check for date validity
-        #else
-        CONT HERE
+        else:
+            if self.local_data_mngr.is_data_out_of_date(ticker, "IB"):
 
-        ticker_obj    = Ticker_data_c()
-        ticker_obj.set_ticker(ticker)
-        ticker_obj.set_raw_data(data, "IB")
-        ticker_obj.set_raw_statements()
-        return ticker_obj.get_raw_statements()
+                # get old data first
+                self.finStatementXmlReader.set_ticker(ticker)
+                old_data = self.finStatementXmlReader.get_fundamentals_obj()
+
+                # download new data
+                self.call_ibapi_function(cfg.GET_FUNDUMENTALS, ticker = ticker)
+                _Q_data, _K_data = self.finStatementXmlReader.parse_comp_data()
+                new_data = {cfg.Q_data : _Q_data, cfg.K_data : _K_data}
+                data = self.local_data_mngr.add_raw_data_to_existing_processed_raw_data(new_data, old_data)
+                self.finStatementXmlReader.save_fund_obj(ticker, merged_data)
+        # ticker_obj    = Ticker_data_c()
+        # ticker_obj.set_ticker(ticker)
+        # ticker_obj.set_raw_data(data, "IB")
+        # ticker_obj.set_raw_statements()
+        # return ticker_obj.get_raw_statements()
+        return data
 
 
+    def _get_fundamentals_vectors(self, ticker):
+        raw_proc_data = self.get_fund_data(ticker)
+        k_df = pd.DataFrame.from_dict(raw_proc_data[K_data])
+        q_df = pd.DataFrame.from_dict(raw_proc_data[Q_data])
+        return (q_df, k_df)
 
     def get_news_vector(self):
         return self._news_vector
